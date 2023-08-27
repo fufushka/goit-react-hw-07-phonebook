@@ -5,8 +5,14 @@ import ContactList from './components/ContactList/ContactList';
 import ContactFilter from './components/ContactFilter/ContactFilter';
 import { useDispatch, useSelector } from 'react-redux';
 
-import { addContact, deleteContact, updateFilter } from './Store/contactSlice';
 import { nanoid } from 'nanoid';
+import { useEffect } from 'react';
+import {
+  addContact,
+  deleteContactbyId,
+  getContacts,
+} from 'Store/contactSliceOperations';
+import { selectContacts, selectFilter, updateFilter } from 'Store/contactSlice';
 
 function filterByString(field, filterValue) {
   return field.toLowerCase().trim().includes(filterValue.toLowerCase().trim());
@@ -15,11 +21,19 @@ function filterByString(field, filterValue) {
 export const App = () => {
   const dispatch = useDispatch();
 
-  const filter = useSelector(state => state.filter);
-  const contacts = useSelector(state => state.contacts);
-  console.log(contacts);
+  const filter = useSelector(selectFilter);
+
+  const contacts = useSelector(selectContacts);
+
+  const isLoading = useSelector(state => state.contacts.isLoading);
+  const error = useSelector(state => state.contacts.error);
+
+  useEffect(() => {
+    dispatch(getContacts());
+  }, [dispatch]);
+
   const onDeleteContact = contactId => {
-    dispatch(deleteContact(contactId));
+    dispatch(deleteContactbyId(contactId));
   };
 
   const onAddContact = ({ name, number }) => {
@@ -49,6 +63,8 @@ export const App = () => {
 
   return (
     <>
+      {error && <p>error</p>}
+      {isLoading && <p>Loading...</p>}
       <h1>Phonebook</h1>
       <ContactForm onAddContact={onAddContact} />
 
